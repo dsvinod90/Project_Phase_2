@@ -83,6 +83,11 @@ class Loader:
         return playlist
 
     def _modify_playlist(self, playlist: Dict) -> None:
+        """Modify uri to extract the unique alphanumeric characters
+        Takes as input, the playlist and strips the text "spotify:uri:" from the attribute value
+        Args:
+            playlist (Dict): playlist data as a dictionary
+        """
         playlist['_id'] = playlist.pop('pid')
         playlist = self._remove_attributes(playlist)
         for track in playlist['tracks']:
@@ -91,6 +96,8 @@ class Loader:
             track['album_uri'] = track['album_uri'][14:]
 
     def _load_data(self) -> None:
+        """Load the playlist data into mongodb
+        """
         print('Importing json files to mongodb')
         self.timer.start()
         for json_file in os.scandir('data'):
@@ -102,6 +109,8 @@ class Loader:
         self.timer.end()
     
     def execute(self) -> None:
+        """Public method that is called to load the data to mongodb
+        """
         self._handle_input_args()
         self._establish_connection()
         self._load_data()

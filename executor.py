@@ -8,13 +8,22 @@ from time_logger import TimeLogger
 from psycopg2.extras import RealDictCursor
 from helper.exit_statuses import ExitStatuses
 
+# limit for the number of results to display in STDOUT
 result_limit = 10
+# path to the sql scripts
 script_path = 'sql_scripts/query_'
+# options for cli arguments to the program
 menu_options = ['help', 'host=', 'dbname=', 'query=']
+# flag options for the cli arguments to the program
 flag_options = 'hH:D:Q:'
 
 class Executor:
     def __init__(self, argv) -> None:
+        """Constructor for the executor
+        Sets the timer, host, dbname and options that will be used in the class for executing queries
+        Args:
+            argv (List): List of input params to the program provided from CLI
+        """
         self.argv = argv
         self.query_number = None
         self.timer = TimeLogger()
@@ -26,6 +35,9 @@ class Executor:
             sys.exit(ExitStatuses.USAGE_ERROR.value)
     
     def _handle_input_args(self) -> None:
+        """Extract data from input params to the program.
+        Sets the values for host and dbname and throws error if an invalid input has been provided to the program.
+        """
         for option, arg in self.options:
             if option in ('-h', '--help'):
                 helper.print_query_menu()
@@ -45,9 +57,16 @@ class Executor:
                 sys.exit(ExitStatuses.USAGE_ERROR.value)
     
     def _print_help_menu(self, arg: str, error: str) -> None:
+        """Print the help menu related to this program when an error is encountered.
+        Args:
+            arg (str): typically the first argument to the program i.e. the name of the program
+            error (str): error message to be displayed in STDOUT
+        """
         helper.print_executor_help_menu(arg, mapper.errors[error])
         
     def _establish_connection(self) -> None:
+        """Establish connection to mongodb based on the hostname and port number given as CLI arguments to the program
+        """
         try:
             connection = psycopg2.connect(host=self.host, dbname=self.dbname)
             connection.set_session(autocommit=True)
@@ -58,6 +77,8 @@ class Executor:
             sys.exit(ExitStatuses.CONNECTION_ERROR.value)
         
     def _execute_query(self) -> None:
+        """Executes the query based on the class variable "query_number"
+        """
         if not self.query_number:
             self._print_help_menu(self.argv[0], 'usage_error')
             sys.exit(ExitStatuses.USAGE_ERROR.value)
@@ -70,12 +91,15 @@ class Executor:
         self.cursor.execute(open(f"{script_path}{self.query_number}.sql").read())
         self.timer.end()
         results = self.cursor.fetchall()
+        # loop to print the results
         for index, row in enumerate(results):
             if index >= result_limit: break
             print(dict(row))
         print(f"TOTAL ROWS = {len(results)}\n")
         
     def execute(self):
+        """Public method that is called to execute the queries
+        """
         self._handle_input_args()
         self._establish_connection()
         self._execute_query()
