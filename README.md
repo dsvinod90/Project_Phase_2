@@ -8,4 +8,5 @@
 
 # Execute Queries on PostgreSQL
 `python executor.py -H <hostname> -D <dbanme> -Q <query_number>`
-## Help menu for queries to be executed: `python executor.py -h`
+## Help menu for queries to be executed: 
+`python executor.py -h`
